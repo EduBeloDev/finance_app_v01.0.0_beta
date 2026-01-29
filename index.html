@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador Financeiro Casal Pro</title>
+    <style>
+        :root {
+            --primary: #2b79ec;
+            --primary-dark: #4f79eb;
+            --secondary: #64748b;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 50px;
+        }
+
+        /* HEADER & TABS */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 20px 0 20px;
+            text-align: center;
+        }
+        
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .tab-btn:hover { background: rgba(255,255,255,0.4); }
+        
+        .tab-btn.active {
+            background: var(--card);
+            color: var(--primary);
+        }
+
+        /* CONTEÚDO DAS ABAS */
+        .tab-content {
+            display: none; /* Escondido por padrão */
+            padding: 30px;
+            animation: fadeIn 0.4s;
+        }
+        
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ELEMENTOS GERAIS */
+        h2 { color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
+        
+        .row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .col { flex: 1; }
+        
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #4b5563; }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* RESULT BOXES */
+        .result-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .big-value { font-size: 2rem; font-weight: 800; color: var(--success); margin: 10px 0; }
+        .big-value.negative { color: var(--danger); }
+        
+        .btn-action {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+        .btn-action:hover { background-color: var(--primary-dark); }
+
+        /* CARDS ANUAIS */
+        .grid-anual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card-info {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .card-info h3 { margin: 0 0 10px 0; color: var(--success); }
+        .info-line { display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding: 5px 0; font-size: 0.9rem; }
+
+        /* MODAIS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .close-modal {
+            background: #e2e8f0;
+            color: #475569;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .sugestao-box {
+            background: #eff6ff;
+            text-align: left;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .sugestao-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: 500; }
+
+        /* NOVOS ESTILOS PARA RESULTADO DETALHADO */
+        .details-loan {
+            text-align: left;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #d1d5db;
+        }
+        .loan-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .loan-highlight {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .row, .grid-anual { flex-direction: column; grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>💰 Gestão Financeira Inteligente</h1>
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="openTab('mensal')">Orçamento Mensal</button>
+            <button class="tab-btn" onclick="openTab('anual')">Análise Anual</button>
+            <button class="tab-btn" onclick="openTab('metas')">Planejamento de Metas</button>
+        </div>
+    </header>
+
+    <div id="mensal" class="tab-content active">
+        <h2>📅 Orçamento Mensal</h2>
+        
+        <div class="row">
+            <div class="col">
+                <label>Mês de Referência</label>
+                <input type="month" id="mesRef" onchange="calcMensal()">
+            </div>
+            <div class="col" style="display:flex; align-items:center; color:#64748b; font-size:0.9rem;" id="msgDias">
+                Selecione um mês.
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>Seu Salário (Líquido)</label>
+                <input type="text" id="m_salario1" placeholder="R$ 0,00" onkeyup="mascaraMoeda(this); calcMensal()">
+            </div>
+            <div class="col">
+                <label>Dia Pagamento</label>
+                <input type="number" id="m_dia1" placeholder="Ex: 5" min="1" max="31">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>Salário Esposa/o (Líquido)</label>
+                <input type="text" id="m_salario2" placeholder="R$ 0,00" onkeyup="mascaraMoeda(this); calcMensal()">
+            </div>
+            <div class="col">
+                <label>Dia Pagamento</label>
+                <input type="number" id="m_dia2" placeholder="Ex: 5" min="1" max="31">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>📉 Despesas Fixas / Faturas</label>
+                <input type="text" id="m_gastos" placeholder="Total contas" onkeyup="mascaraMoeda(this); calcMensal()">
+            </div>
+            <div class="col">
+                <label>🏦 Meta Economia (Mês)</label>
+                <input type="text" id="m_meta" placeholder="Reserva mensal" onkeyup="mascaraMoeda(this); calcMensal()">
+            </div>
+        </div>
+        
+        <div class="result-card">
+            <label>LIVRE PARA GASTAR (MÊS)</label>
+            <div id="m_livre" class="big-value">R$ 0,00</div>
+            
+            <div style="border-top: 1px solid #e2e8f0; margin: 15px 0;"></div>
+            
+            <label>TETO DIÁRIO SUGERIDO</label>
+            <div id="m_diario" style="color:var(--primary); font-size:1.4rem; font-weight:bold;">R$ 0,00 / dia</div>
+            <p id="m_detalhe" style="font-size:0.8rem; margin-top:5px; color:#64748b;"></p>
+        </div>
+    </div>
+
+    <div id="anual" class="tab-content">
+        <h2>📊 Análise Anual & Impostos</h2>
+        <p style="font-size:0.9rem; color:#64748b; margin-bottom:20px;">Insira os valores brutos para um cálculo mais preciso de CLT e Imposto de Renda.</p>
+
+        <div class="row">
+            <div class="col">
+                <label>Seu Salário (Base Cálculo)</label>
+                <input type="text" id="a_salario1" placeholder="R$ 0,00" onkeyup="mascaraMoeda(this)">
+            </div>
+            <div class="col">
+                <label>Salário Esposa/o (Base Cálculo)</label>
+                <input type="text" id="a_salario2" placeholder="R$ 0,00" onkeyup="mascaraMoeda(this)">
+            </div>
+        </div>
+
+        <button class="btn-action" onclick="calcAnual()">GERAR PROJEÇÃO ANUAL</button>
+
+        <div class="grid-anual" id="resultadoAnual" style="display:none; animation:fadeIn 0.5s;">
+            <div class="card-info">
+                <h3>👤 Você (Estimativa CLT)</h3>
+                <div class="info-line"><span>13º Salário:</span> <strong id="res_13_1">R$ 0</strong></div>
+                <div class="info-line"><span>Férias (1/3):</span> <strong id="res_ferias_1">R$ 0</strong></div>
+                <div class="info-line"><span>FGTS Acumulado:</span> <strong id="res_fgts_1">R$ 0</strong></div>
+            </div>
+            <div class="card-info">
+                <h3>👤 Esposa/o (Estimativa CLT)</h3>
+                <div class="info-line"><span>13º Salário:</span> <strong id="res_13_2">R$ 0</strong></div>
+                <div class="info-line"><span>Férias (1/3):</span> <strong id="res_ferias_2">R$ 0</strong></div>
+                <div class="info-line"><span>FGTS Acumulado:</span> <strong id="res_fgts_2">R$ 0</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="metas" class="tab-content">
+        <h2>✈️ Planejamento de Metas</h2>
+        
+        <div class="row">
+            <div class="col">
+                <label>Qual seu objetivo?</label>
+                <select id="p_tipo" onchange="verificarTipoMeta()">
+                    <option value="viagem">✈️ Viagem</option>
+                    <option value="estudos">📚 Estudos</option>
+                    <option value="investimento">📈 Investimentos</option>
+                    <option value="emergencia">🆘 Reserva de Emergência</option>
+                    <option value="emprestimo">💰 Empréstimo</option>
+                    <option value="outro">🎯 Outro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row" id="row_meta_padrao">
+            <div class="col">
+                <label>Valor da Meta</label>
+                <input type="text" id="p_meta" onkeyup="mascaraMoeda(this)">
+            </div>
+        </div>
+
+        <div class="row" id="row_meta_emprestimo" style="display: none;">
+            <div class="col">
+                <label>Qual o valor?</label>
+                <input type="text" id="p_valor_emp" placeholder="Valor do empréstimo" onkeyup="mascaraMoeda(this)">
+            </div>
+            <div class="col">
+                <label>Qual a porcentagem de % (a.m)?</label>
+                <input type="number" id="p_juros" placeholder="Ex: 1.5">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label>Parcelar em:</label>
+                <select id="p_prazo">
+                    <option value="12">12 meses (1 ano)</option>
+                    <option value="24">24 meses (2 anos)</option>
+                    <option value="48">48 meses (4 anos)</option>
+                    <option value="64">64 meses</option>
+                    <option value="120">120 meses (10 anos)</option>
+                    <option value="240">240 meses (20 anos)</option>
+                </select>
+            </div>
+        </div>
+        
+        <button class="btn-action" onclick="calcMetas()">CALCULAR</button>
+
+        <div id="resMetaSucesso" class="result-card" style="display:none; background:#f0fdf4; border-color:#bbf7d0;">
+            <label style="color:var(--success)" id="labelMetaResultado">✅ RESULTADO:</label>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <div class="big-value" id="p_resultado_final" style="margin: 5px 0;">R$ 0,00</div>
+                <span id="p_juros_parcela_info" style="font-size: 0.9rem; color: var(--danger); font-weight: 500;"></span>
+            </div>
+            
+            <p id="p_texto_resultado">Valor mensal.</p>
+
+            <div id="p_detalhes_emp" class="details-loan" style="display: none;">
+                <div class="loan-row" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; margin-bottom: 10px;">
+                    <strong>Resumo do Empréstimo:</strong>
+                </div>
+                <div class="loan-row">
+                    <span>Valor Final (Total a Pagar):</span>
+                    <strong id="p_total_final">R$ 0,00</strong>
+                </div>
+                <div class="loan-row">
+                    <span>Total de Juros Pagos:</span>
+                    <strong class="loan-highlight" id="p_total_juros">R$ 0,00</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalIR" class="modal-overlay">
+    <div class="modal-box">
+        <div style="font-size:3rem;">🦁</div>
+        <h2 style="color:var(--danger); border:none;">Alerta do Leão!</h2>
+        <div id="txtIR" style="text-align:left; background:#fef2f2; padding:15px; border-radius:8px; margin:15px 0;"></div>
+        <p style="font-size:0.8rem; color:#64748b;">Baseado na tabela IR 2024/2025. Consulte um contador.</p>
+        <button class="close-modal" onclick="fecharModal('modalIR')">Entendi</button>
+    </div>
+</div>
+
+<script>
+    // --- NAVEGAÇÃO ENTRE ABAS ---
+    function openTab(tabName) {
+        const contents = document.getElementsByClassName('tab-content');
+        for (let c of contents) c.classList.remove('active');
+        const btns = document.getElementsByClassName('tab-btn');
+        for (let b of btns) b.classList.remove('active');
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // --- FUNÇÕES AUXILIARES ---
+    function formatar(val) { 
+        return val.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); 
+    }
+
+    function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // --- MÁSCARA DE MOEDA ---
+    function mascaraMoeda(i) {
+        let v = i.value.replace(/\D/g,'');
+        v = (v/100).toFixed(2) + '';
+        v = v.replace(".", ",");
+        v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+        v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+        i.value = 'R$ ' + v;
+    }
+
+    function pegarFloat(id) { 
+        let val = document.getElementById(id).value;
+        val = val.replace(/\D/g, ''); 
+        return (parseFloat(val) / 100) || 0;
+    }
+
+    // --- CONTROLE DE CAMPOS DA META ---
+    function verificarTipoMeta() {
+        const tipo = document.getElementById('p_tipo').value;
+        const divPadrao = document.getElementById('row_meta_padrao');
+        const divEmp = document.getElementById('row_meta_emprestimo');
+
+        if (tipo === 'emprestimo') {
+            divPadrao.style.display = 'none';
+            divEmp.style.display = 'flex';
+        } else {
+            divPadrao.style.display = 'flex';
+            divEmp.style.display = 'none';
+        }
+        document.getElementById('resMetaSucesso').style.display = 'none';
+    }
+
+    // --- INICIALIZAÇÃO ---
+    window.onload = function() {
+        const hoje = new Date();
+        document.getElementById('mesRef').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+        calcMensal();
+    }
+
+    // --- CÁLCULO MENSAL ---
+    function calcMensal() {
+        const s1 = pegarFloat('m_salario1');
+        const s2 = pegarFloat('m_salario2');
+        const gastos = pegarFloat('m_gastos');
+        const meta = pegarFloat('m_meta');
+        
+        const livre = (s1 + s2) - gastos - meta;
+        
+        const elLivre = document.getElementById('m_livre');
+        elLivre.innerText = formatar(livre);
+        elLivre.className = livre < 0 ? 'big-value negative' : 'big-value';
+
+        const mesInput = document.getElementById('mesRef').value;
+        if(!mesInput) return;
+        
+        const [anoRef, mesRef] = mesInput.split('-').map(Number);
+        const hoje = new Date();
+        const ultimoDia = new Date(anoRef, mesRef, 0).getDate();
+        
+        let diasRestantes = 1;
+        let texto = "";
+
+        if (anoRef === hoje.getFullYear() && mesRef === (hoje.getMonth()+1)) {
+            diasRestantes = Math.max(1, ultimoDia - hoje.getDate());
+            texto = `Faltam ${diasRestantes} dias para acabar o mês.`;
+        } else {
+            diasRestantes = ultimoDia;
+            texto = `Considerando mês cheio (${diasRestantes} dias).`;
+        }
+
+        document.getElementById('msgDias').innerText = texto;
+        
+        const diario = livre > 0 ? (livre / diasRestantes) : 0;
+        document.getElementById('m_diario').innerText = formatar(diario) + " / dia";
+        document.getElementById('m_detalhe').innerText = `Calculado sobre ${diasRestantes} dias.`;
+    }
+
+    // --- CÁLCULO ANUAL ---
+    function calcAnual() {
+        const s1 = pegarFloat('a_salario1');
+        const s2 = pegarFloat('a_salario2');
+        
+        function getCLT(sal) {
+            return {
+                decimo: sal,
+                ferias: sal + (sal/3),
+                fgts: (sal * 13.33) * 0.08
+            };
+        }
+
+        const d1 = getCLT(s1);
+        const d2 = getCLT(s2);
+
+        document.getElementById('res_13_1').innerText = formatar(d1.decimo);
+        document.getElementById('res_ferias_1').innerText = formatar(d1.ferias);
+        document.getElementById('res_fgts_1').innerText = formatar(d1.fgts);
+
+        document.getElementById('res_13_2').innerText = formatar(d2.decimo);
+        document.getElementById('res_ferias_2').innerText = formatar(d2.ferias);
+        document.getElementById('res_fgts_2').innerText = formatar(d2.fgts);
+
+        document.getElementById('resultadoAnual').style.display = 'grid';
+
+        const isencao = 2259.20;
+        let msg = [];
+        
+        if(s1 > isencao) msg.push(`👉 <b>Seu Salário:</b> Recebe acima de ${formatar(isencao)}. Provável tributação.`);
+        else msg.push(`👉 <b>Seu Salário:</b> Faixa de isenção.`);
+
+        if(s2 > isencao) msg.push(`👉 <b>Salário do Cônjuge:</b> Recebe acima de ${formatar(isencao)}. Provável tributação.`);
+        else msg.push(`👉 <b>Salário do Cônjuge:</b> Faixa de isenção.`);
+
+        document.getElementById('txtIR').innerHTML = msg.join('<br><br>');
+        document.getElementById('modalIR').style.display = 'flex';
+    }
+
+    // --- CÁLCULO METAS E EMPRÉSTIMOS ---
+    function calcMetas() {
+        const tipo = document.getElementById('p_tipo').value;
+        const meses = parseInt(document.getElementById('p_prazo').value);
+        let resultado = 0;
+        let label = "";
+        
+        // Reset da UI
+        document.getElementById('p_detalhes_emp').style.display = 'none';
+        document.getElementById('p_juros_parcela_info').innerText = "";
+
+        if (tipo === 'emprestimo') {
+            const valorEmp = pegarFloat('p_valor_emp');
+            let taxaJuros = parseFloat(document.getElementById('p_juros').value);
+
+            if (valorEmp === 0) { alert("Informe o valor do empréstimo."); return; }
+            if (isNaN(taxaJuros)) taxaJuros = 0;
+
+            if (taxaJuros > 0) {
+                // Price: PMT = P * ( i * (1+i)^n ) / ( (1+i)^n - 1 )
+                const i = taxaJuros / 100;
+                resultado = valorEmp * ( (i * Math.pow(1+i, meses)) / (Math.pow(1+i, meses) - 1) );
+            } else {
+                resultado = valorEmp / meses;
+            }
+            
+            // Cálculos Totais
+            const totalFinal = resultado * meses;
+            const totalJuros = totalFinal - valorEmp;
+            const jurosMedioPorParcela = totalJuros / meses;
+
+            label = "Valor da Parcela:";
+            document.getElementById('labelMetaResultado').innerText = `🏦 SIMULAÇÃO DE EMPRÉSTIMO (${meses}x):`;
+
+            // Exibir Detalhes Extras
+            document.getElementById('p_detalhes_emp').style.display = 'block';
+            document.getElementById('p_total_final').innerText = formatar(totalFinal);
+            document.getElementById('p_total_juros').innerText = formatar(totalJuros);
+            
+            // Texto ao lado da parcela (Juros Médios)
+            if (taxaJuros > 0) {
+                document.getElementById('p_juros_parcela_info').innerText = `(Média de juros na parcela: ${formatar(jurosMedioPorParcela)})`;
+            }
+
+        } else {
+            const meta = pegarFloat('p_meta');
+            if (meta === 0) { alert("Informe o valor da meta."); return; }
+            
+            resultado = meta / meses;
+            label = "";
+            document.getElementById('labelMetaResultado').innerText = `✅ PLANO PARA ${meses} MESES:`;
+        }
+
+        document.getElementById('p_resultado_final').innerText = formatar(resultado) + (tipo !== 'emprestimo' ? " /mês" : "");
+        document.getElementById('p_texto_resultado').innerText = label;
+        document.getElementById('resMetaSucesso').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
